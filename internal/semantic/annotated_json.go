@@ -82,7 +82,7 @@ func convertAnnotatedValue(value reflect.Value, result *Result) any {
 			}
 			out[lowerFirst(fieldInfo.Name)] = convertAnnotatedValue(value.Field(i), result)
 		}
-		// This also supports AST implementations that use value expressions.
+
 		if value.CanInterface() {
 			if expr, ok := value.Interface().(ast.Expr); ok {
 				if inferredType, found := lookupExpressionType(expr, result); found {
