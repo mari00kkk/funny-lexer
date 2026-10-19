@@ -9,8 +9,6 @@ import (
 	"funny-lexer/internal/ast"
 )
 
-// annotatedDocument is the complete output of semantic analysis.
-// AST contains the original syntax tree plus inferredType annotations on expressions.
 type annotatedDocument struct {
 	AST    any              `json:"ast"`
 	Errors []annotatedError `json:"errors"`
@@ -22,9 +20,6 @@ type annotatedError struct {
 	Message string `json:"message"`
 }
 
-// MarshalAnnotatedJSON converts the AST to JSON and adds inferredType to every
-// expression for which the analyzer has a type. Diagnostics are emitted in the
-// same document, including when semantic analysis found errors.
 func MarshalAnnotatedJSON(program *ast.Program, result *Result) ([]byte, error) {
 	if program == nil {
 		return nil, fmt.Errorf("cannot serialize a nil AST")
@@ -133,8 +128,7 @@ func lookupExpressionType(expr ast.Expr, result *Result) (Type, bool) {
 	if expr == nil || result == nil || result.Types == nil {
 		return Type("<unknown>"), false
 	}
-	// A value expression containing slices is not a valid map key. Parser-created
-	// expressions are pointers, but this guard keeps manually-built ASTs safe.
+
 	t := reflect.TypeOf(expr)
 	if t == nil || !t.Comparable() {
 		return Type("<unknown>"), false

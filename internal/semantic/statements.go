@@ -57,7 +57,7 @@ func (a *Analyzer) checkAssignment(s *ast.Assignment) {
 	if len(s.Variables) > 1 && len(s.Value) == 1 {
 		if call, ok := s.Value[0].(*ast.CallExpr); ok {
 			sym, found := a.global.lookup(call.Name)
-			if found && sym.Kind == FunctionSymbol { // Check call arguments without treating its multi-return as a scalar.
+			if found && sym.Kind == FunctionSymbol {
 				if len(call.Args) != len(sym.Parameters) {
 					a.add(fmt.Sprintf("call %q expects %d arguments, got %d", call.Name, len(sym.Parameters), len(call.Args)))
 				}
@@ -152,7 +152,7 @@ func (a *Analyzer) assignVariable(name string, value Type) {
 	s, ok := a.scope.lookup(name)
 
 	if !ok {
-		// Нельзя вывести тип из ошибочного или неизвестного выражения.
+		// нельзя вывести тип из ошибочноо выражения
 		inferredType := value
 		if value == Invalid || value == Unknown {
 			inferredType = Unknown
@@ -173,8 +173,8 @@ func (a *Analyzer) assignVariable(name string, value Type) {
 	}
 
 	if s.Type == Unknown {
-		// Выводим тип только из корректного выражения,
-		// тип которого действительно известен.
+		// выводим тип только из корректного выражения,
+		// тип которого действительно известен
 		if value == Unknown || value == Invalid {
 			return
 		}
