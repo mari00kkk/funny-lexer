@@ -1,0 +1,3 @@
+digraph "calculate" {
+  B0 [shape=box,label="B0: %t1 = a + b\lresult = %t1\lreturn [result]"];
+}

@@ -1,0 +1,21 @@
+digraph "abs_and_count" {
+  B0 [shape=box,label="B0: %t2 = value >= 0\lif %t2 != 0 goto L1"];
+  B1 [shape=box,label="B1: goto L2"];
+  B2 [shape=box,label="B2: L1:\lresult = value\lgoto L3"];
+  B3 [shape=box,label="B3: L2:\l%t6 = 0 - value\lresult = %t6"];
+  B4 [shape=box,label="B4: L3:"];
+  B5 [shape=box,label="B5: L4:\l%t8 = result > 1\lif %t8 != 0 goto L5"];
+  B6 [shape=box,label="B6: goto L6"];
+  B7 [shape=box,label="B7: L5:\l%t10 = result - 1\lresult = %t10\lgoto L4"];
+  B8 [shape=box,label="B8: L6:\lreturn [result]"];
+  B0 -> B2;
+  B0 -> B1;
+  B1 -> B3;
+  B2 -> B4;
+  B3 -> B4;
+  B4 -> B5;
+  B5 -> B7;
+  B5 -> B6;
+  B6 -> B8;
+  B7 -> B5;
+}

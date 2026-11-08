@@ -1,0 +1,37 @@
+function abs_and_count(value) -> (result) {
+  %t1 = 0
+  %t2 = value >= %t1
+  if %t2 != 0 goto L1
+  goto L2
+  L1:
+  %t3 = 0
+  %t4 = value + %t3
+  result = %t4
+  goto L3
+  L2:
+  %t5 = 0
+  %t6 = %t5 - value
+  result = %t6
+  L3:
+  L4:
+  %t7 = 1
+  %t8 = result > %t7
+  if %t8 != 0 goto L5
+  goto L6
+  L5:
+  %t9 = 1
+  %t10 = result - %t9
+  result = %t10
+  goto L4
+  L6:
+  return [result]
+}
+function calculate(a, b) -> (result) {
+  %t1 = a + b
+  %t2 = 1
+  %t3 = %t1 * %t2
+  %t4 = 0
+  %t5 = %t3 + %t4
+  result = %t5
+  return [result]
+}

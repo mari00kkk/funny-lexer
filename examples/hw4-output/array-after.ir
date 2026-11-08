@@ -1,0 +1,7 @@
+function process(a) -> (result) {
+  %t2 = a[0]
+  result = %t2
+  %t4 = %t2 + 1
+  a[1] = %t4
+  return [result]
+}

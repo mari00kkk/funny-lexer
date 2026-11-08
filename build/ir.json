@@ -1,0 +1,388 @@
+{
+  "before": {
+    "functions": [
+      {
+        "name": "abs_and_count",
+        "parameters": [
+          "value"
+        ],
+        "parameterTypes": [
+          "int"
+        ],
+        "returns": [
+          "result"
+        ],
+        "returnTypes": [
+          "int"
+        ],
+        "instructions": [
+          {
+            "op": "const",
+            "dest": "%t1",
+            "arg1": "0"
+          },
+          {
+            "op": "bin",
+            "dest": "%t2",
+            "arg1": "value",
+            "arg2": "%t1",
+            "operator": "\u003e="
+          },
+          {
+            "op": "branch",
+            "arg1": "%t2",
+            "target": "L1"
+          },
+          {
+            "op": "jump",
+            "target": "L2"
+          },
+          {
+            "op": "label",
+            "target": "L1"
+          },
+          {
+            "op": "const",
+            "dest": "%t3",
+            "arg1": "0"
+          },
+          {
+            "op": "bin",
+            "dest": "%t4",
+            "arg1": "value",
+            "arg2": "%t3",
+            "operator": "+"
+          },
+          {
+            "op": "move",
+            "dest": "result",
+            "arg1": "%t4"
+          },
+          {
+            "op": "jump",
+            "target": "L3"
+          },
+          {
+            "op": "label",
+            "target": "L2"
+          },
+          {
+            "op": "const",
+            "dest": "%t5",
+            "arg1": "0"
+          },
+          {
+            "op": "bin",
+            "dest": "%t6",
+            "arg1": "%t5",
+            "arg2": "value",
+            "operator": "-"
+          },
+          {
+            "op": "move",
+            "dest": "result",
+            "arg1": "%t6"
+          },
+          {
+            "op": "label",
+            "target": "L3"
+          },
+          {
+            "op": "label",
+            "target": "L4"
+          },
+          {
+            "op": "const",
+            "dest": "%t7",
+            "arg1": "1"
+          },
+          {
+            "op": "bin",
+            "dest": "%t8",
+            "arg1": "result",
+            "arg2": "%t7",
+            "operator": "\u003e"
+          },
+          {
+            "op": "branch",
+            "arg1": "%t8",
+            "target": "L5"
+          },
+          {
+            "op": "jump",
+            "target": "L6"
+          },
+          {
+            "op": "label",
+            "target": "L5"
+          },
+          {
+            "op": "const",
+            "dest": "%t9",
+            "arg1": "1"
+          },
+          {
+            "op": "bin",
+            "dest": "%t10",
+            "arg1": "result",
+            "arg2": "%t9",
+            "operator": "-"
+          },
+          {
+            "op": "move",
+            "dest": "result",
+            "arg1": "%t10"
+          },
+          {
+            "op": "jump",
+            "target": "L4"
+          },
+          {
+            "op": "label",
+            "target": "L6"
+          },
+          {
+            "op": "return",
+            "args": [
+              "result"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "calculate",
+        "parameters": [
+          "a",
+          "b"
+        ],
+        "parameterTypes": [
+          "int",
+          "int"
+        ],
+        "returns": [
+          "result"
+        ],
+        "returnTypes": [
+          "int"
+        ],
+        "instructions": [
+          {
+            "op": "bin",
+            "dest": "%t1",
+            "arg1": "a",
+            "arg2": "b",
+            "operator": "+"
+          },
+          {
+            "op": "const",
+            "dest": "%t2",
+            "arg1": "1"
+          },
+          {
+            "op": "bin",
+            "dest": "%t3",
+            "arg1": "%t1",
+            "arg2": "%t2",
+            "operator": "*"
+          },
+          {
+            "op": "const",
+            "dest": "%t4",
+            "arg1": "0"
+          },
+          {
+            "op": "bin",
+            "dest": "%t5",
+            "arg1": "%t3",
+            "arg2": "%t4",
+            "operator": "+"
+          },
+          {
+            "op": "move",
+            "dest": "result",
+            "arg1": "%t5"
+          },
+          {
+            "op": "return",
+            "args": [
+              "result"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "after": {
+    "functions": [
+      {
+        "name": "abs_and_count",
+        "parameters": [
+          "value"
+        ],
+        "parameterTypes": [
+          "int"
+        ],
+        "returns": [
+          "result"
+        ],
+        "returnTypes": [
+          "int"
+        ],
+        "instructions": [
+          {
+            "op": "bin",
+            "dest": "%t2",
+            "arg1": "value",
+            "arg2": "0",
+            "operator": "\u003e="
+          },
+          {
+            "op": "branch",
+            "arg1": "%t2",
+            "target": "L1"
+          },
+          {
+            "op": "jump",
+            "target": "L2"
+          },
+          {
+            "op": "label",
+            "target": "L1"
+          },
+          {
+            "op": "move",
+            "dest": "result",
+            "arg1": "value"
+          },
+          {
+            "op": "jump",
+            "target": "L3"
+          },
+          {
+            "op": "label",
+            "target": "L2"
+          },
+          {
+            "op": "bin",
+            "dest": "%t6",
+            "arg1": "0",
+            "arg2": "value",
+            "operator": "-"
+          },
+          {
+            "op": "move",
+            "dest": "result",
+            "arg1": "%t6"
+          },
+          {
+            "op": "label",
+            "target": "L3"
+          },
+          {
+            "op": "label",
+            "target": "L4"
+          },
+          {
+            "op": "bin",
+            "dest": "%t8",
+            "arg1": "result",
+            "arg2": "1",
+            "operator": "\u003e"
+          },
+          {
+            "op": "branch",
+            "arg1": "%t8",
+            "target": "L5"
+          },
+          {
+            "op": "jump",
+            "target": "L6"
+          },
+          {
+            "op": "label",
+            "target": "L5"
+          },
+          {
+            "op": "bin",
+            "dest": "%t10",
+            "arg1": "result",
+            "arg2": "1",
+            "operator": "-"
+          },
+          {
+            "op": "move",
+            "dest": "result",
+            "arg1": "%t10"
+          },
+          {
+            "op": "jump",
+            "target": "L4"
+          },
+          {
+            "op": "label",
+            "target": "L6"
+          },
+          {
+            "op": "return",
+            "args": [
+              "result"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "calculate",
+        "parameters": [
+          "a",
+          "b"
+        ],
+        "parameterTypes": [
+          "int",
+          "int"
+        ],
+        "returns": [
+          "result"
+        ],
+        "returnTypes": [
+          "int"
+        ],
+        "instructions": [
+          {
+            "op": "bin",
+            "dest": "%t1",
+            "arg1": "a",
+            "arg2": "b",
+            "operator": "+"
+          },
+          {
+            "op": "move",
+            "dest": "result",
+            "arg1": "%t1"
+          },
+          {
+            "op": "return",
+            "args": [
+              "result"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "metrics": {
+    "abs_and_count": {
+      "beforeInstructions": 26,
+      "afterInstructions": 20,
+      "beforeTemporaries": 10,
+      "afterTemporaries": 4,
+      "colors": 1
+    },
+    "calculate": {
+      "beforeInstructions": 7,
+      "afterInstructions": 3,
+      "beforeTemporaries": 5,
+      "afterTemporaries": 1,
+      "colors": 1
+    }
+  }
+}
