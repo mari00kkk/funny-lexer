@@ -17,7 +17,7 @@ func Range(from, to int32) nfa.NFA {
 	return result
 }
 
-// Функции-генераторы создают НОВЫЕ состояния при каждом вызове
+// Функции-генераторы создают состояния при каждом вызове
 func Digits() nfa.NFA              { return Range('0', '9') }
 func NonZeroDigits() nfa.NFA       { return Range('1', '9') }
 func LettersLower() nfa.NFA        { return Range('a', 'z') }
@@ -48,27 +48,27 @@ func AnyExceptNL() nfa.NFA {
 func BuildFunnyNFA() nfa.NFA {
 	superStart := nfa.NewState()
 
-	// 1. WS: [ \t\r\n]+
+	// WS: [ \t\r\n]+
 	wsChar := nfa.Union(nfa.Literal(' '), nfa.Union(nfa.Literal('\t'), nfa.Union(nfa.Literal('\r'), nfa.Literal('\n'))))
 	wsNFA := Plus(wsChar)
 	addRule(superStart, wsNFA, "WS", 1)
 
-	// 2. COMMENT: //[^\n]*
+	// COMMENT: //[^\n]*
 	commentNFA := nfa.Concat(StringLiteral("//"), nfa.StarKleene(AnyExceptNL()))
 	addRule(superStart, commentNFA, "COMMENT", 1)
 
-	// 3. INT: 0 | [1-9][0-9]*
+	// INT: 0 | [1-9][0-9]*
 	intZero := nfa.Literal('0')
 	intNonZero := nfa.Concat(NonZeroDigits(), nfa.StarKleene(Digits()))
 	intNFA := nfa.Union(intZero, intNonZero)
 	addRule(superStart, intNFA, "INT", 2)
 
-	// 4. IDENT: [a-zA-Z_][a-zA-Z0-9_]* (Изолированные свежие графы)
+	// IDENT: [a-zA-Z_][a-zA-Z0-9_]*
 	identBody := nfa.Union(LettersOrUnderscore(), Digits())
 	identNFA := nfa.Concat(LettersOrUnderscore(), nfa.StarKleene(identBody))
 	addRule(superStart, identNFA, "IDENT", 3)
 
-	// 5. KEYWORDS (Приоритет 4)
+	// KEYWORDS (Приоритет 4)
 	keywords := []string{
 		"function",
 		"returns",
@@ -101,7 +101,7 @@ func BuildFunnyNFA() nfa.NFA {
 		addRule(superStart, StringLiteral(kw), "KEYWORD", 4)
 	}
 
-	// 6. OPERATORS & DELIMITERS (Приоритеты 5 и 4)
+	//OPERATORS & DELIMITERS (Приоритеты 5 и 4)
 	twoCharOps := []string{"==", "!=", "<=", ">=", "=>"}
 	for _, op := range twoCharOps {
 		addRule(superStart, StringLiteral(op), "OP", 5)

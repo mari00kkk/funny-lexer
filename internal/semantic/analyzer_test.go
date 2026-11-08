@@ -285,3 +285,344 @@ func TestInferredTypeIsPreservedOnLaterAssignments(t *testing.T) {
 		t.Errorf("expected second target to have type int, got %s", got)
 	}
 }
+
+func TestAnalyzeUnaryExpression(t *testing.T) {
+	expression := &ast.UnaryExpr{
+		Op: "-",
+		X:  variable("a"),
+	}
+
+	program := &ast.Program{
+		Functions: []ast.Function{{
+			Name:       "f",
+			Parameters: []ast.Variable{intVar("a")},
+			Returns:    []ast.Variable{intVar("result")},
+			Body: &ast.Block{Statements: []ast.Statement{
+				&ast.Assignment{
+					Variables: []ast.Expr{variable("result")},
+					Value:     []ast.Expr{expression},
+				},
+			}},
+		}},
+	}
+
+	result := Analyze(program)
+
+	if len(result.Errors) != 0 {
+		t.Fatalf("expected no errors for unary minus, got: %+v", result.Errors)
+	}
+
+	if got := result.Types[expression]; got != Int {
+		t.Errorf("expected unary expression type int, got %s", got)
+	}
+}
+
+func TestAnalyzeArrayAccess(t *testing.T) {
+	expression := &ast.ArrayAccessExpr{
+		Array: "arr",
+		Index: variable("i"),
+	}
+
+	program := &ast.Program{
+		Functions: []ast.Function{{
+			Name: "f",
+			Parameters: []ast.Variable{
+				{Name: "arr", Type: ast.IntArray},
+				intVar("i"),
+			},
+			Returns: []ast.Variable{intVar("result")},
+			Body: &ast.Block{Statements: []ast.Statement{
+				&ast.Assignment{
+					Variables: []ast.Expr{variable("result")},
+					Value:     []ast.Expr{expression},
+				},
+			}},
+		}},
+	}
+
+	result := Analyze(program)
+
+	if len(result.Errors) != 0 {
+		t.Fatalf("expected no errors for valid array access, got: %+v", result.Errors)
+	}
+
+	if got := result.Types[expression]; got != Int {
+		t.Errorf("expected array element type int, got %s", got)
+	}
+}
+
+func TestAnalyzeArrayAssignment(t *testing.T) {
+	program := &ast.Program{
+		Functions: []ast.Function{{
+			Name: "f",
+			Parameters: []ast.Variable{
+				{Name: "arr", Type: ast.IntArray},
+				intVar("i"),
+			},
+			Body: &ast.Block{Statements: []ast.Statement{
+				&ast.Assignment{
+					Variables: []ast.Expr{
+						&ast.ArrayAccessExpr{
+							Array: "arr",
+							Index: variable("i"),
+						},
+					},
+					Value: []ast.Expr{number("10")},
+				},
+			}},
+		}},
+	}
+
+	result := Analyze(program)
+
+	if len(result.Errors) != 0 {
+		t.Fatalf("expected valid array element assignment, got: %+v", result.Errors)
+	}
+}
+
+func TestAnalyzeFunctionArgumentTypeMismatch(t *testing.T) {
+	program := &ast.Program{
+		Functions: []ast.Function{
+			{
+				Name:       "callee",
+				Parameters: []ast.Variable{intVar("x")},
+				Returns:    []ast.Variable{intVar("result")},
+				Body:       &ast.Block{},
+			},
+			{
+				Name: "caller",
+				Parameters: []ast.Variable{
+					{Name: "arr", Type: ast.IntArray},
+				},
+				Returns: []ast.Variable{intVar("result")},
+				Body: &ast.Block{Statements: []ast.Statement{
+					&ast.Assignment{
+						Variables: []ast.Expr{variable("result")},
+						Value: []ast.Expr{
+							&ast.CallExpr{
+								Name: "callee",
+								Args: []ast.Expr{variable("arr")},
+							},
+						},
+					},
+				}},
+			},
+		},
+	}
+
+	result := Analyze(program)
+
+	if !hasError(result, `argument 1 of "callee": expected int, got int[]`) {
+		t.Fatalf("expected argument type mismatch, got: %+v", result.Errors)
+	}
+}
+
+func TestAnalyzeAssignmentTargetValueCountMismatch(t *testing.T) {
+	program := &ast.Program{
+		Functions: []ast.Function{{
+			Name:       "f",
+			Parameters: []ast.Variable{intVar("a")},
+			Body: &ast.Block{Statements: []ast.Statement{
+				&ast.Assignment{
+					Variables: []ast.Expr{
+						variable("x"),
+						variable("y"),
+					},
+					Value: []ast.Expr{variable("a")},
+				},
+			}},
+		}},
+	}
+
+	result := Analyze(program)
+
+	if !hasError(result, "assignment has 2 targets and 1 values") {
+		t.Fatalf("expected assignment count error, got: %+v", result.Errors)
+	}
+}
+
+func TestAnalyzeMultipleReturnValues(t *testing.T) {
+	program := &ast.Program{
+		Functions: []ast.Function{
+			{
+				Name: "pair",
+				Returns: []ast.Variable{
+					intVar("first"),
+					intVar("second"),
+				},
+				Body: &ast.Block{Statements: []ast.Statement{
+					&ast.Assignment{
+						Variables: []ast.Expr{
+							variable("first"),
+							variable("second"),
+						},
+						Value: []ast.Expr{
+							number("1"),
+							number("2"),
+						},
+					},
+				}},
+			},
+			{
+				Name: "caller",
+				Body: &ast.Block{Statements: []ast.Statement{
+					&ast.Assignment{
+						Variables: []ast.Expr{
+							variable("x"),
+							variable("y"),
+						},
+						Value: []ast.Expr{
+							&ast.CallExpr{Name: "pair"},
+						},
+					},
+				}},
+			},
+		},
+	}
+
+	result := Analyze(program)
+
+	if len(result.Errors) != 0 {
+		t.Fatalf("expected valid multiple-return assignment, got: %+v", result.Errors)
+	}
+}
+
+func TestAnalyzeIfAndWhileStatements(t *testing.T) {
+	program := &ast.Program{
+		Functions: []ast.Function{{
+			Name:       "f",
+			Parameters: []ast.Variable{intVar("a")},
+			Returns:    []ast.Variable{intVar("result")},
+			Body: &ast.Block{Statements: []ast.Statement{
+				&ast.If{
+					Condition: &ast.Comparison{
+						Left:  variable("a"),
+						Op:    ">",
+						Right: number("0"),
+					},
+					Then: &ast.Assignment{
+						Variables: []ast.Expr{variable("result")},
+						Value:     []ast.Expr{variable("a")},
+					},
+					Else: &ast.Assignment{
+						Variables: []ast.Expr{variable("result")},
+						Value:     []ast.Expr{number("0")},
+					},
+					HasElse: true,
+				},
+				&ast.While{
+					Condition: &ast.Comparison{
+						Left:  variable("a"),
+						Op:    ">",
+						Right: number("0"),
+					},
+					Body: &ast.Assignment{
+						Variables: []ast.Expr{variable("result")},
+						Value:     []ast.Expr{variable("a")},
+					},
+				},
+			}},
+		}},
+	}
+
+	result := Analyze(program)
+
+	if len(result.Errors) != 0 {
+		t.Fatalf("expected valid if and while statements, got: %+v", result.Errors)
+	}
+}
+
+func TestAnalyzeRequiresAndEnsures(t *testing.T) {
+	requires := ast.Predicate(ast.PredicateComparison{
+		Left:  variable("a"),
+		Op:    ">=",
+		Right: number("0"),
+	})
+
+	ensures := ast.Predicate(ast.PredicateComparison{
+		Left:  variable("result"),
+		Op:    ">=",
+		Right: number("0"),
+	})
+
+	program := &ast.Program{
+		Functions: []ast.Function{{
+			Name:       "f",
+			Parameters: []ast.Variable{intVar("a")},
+			Returns:    []ast.Variable{intVar("result")},
+			Requires:   &requires,
+			Ensures:    &ensures,
+			Body: &ast.Block{Statements: []ast.Statement{
+				&ast.Assignment{
+					Variables: []ast.Expr{variable("result")},
+					Value:     []ast.Expr{variable("a")},
+				},
+			}},
+		}},
+	}
+
+	result := Analyze(program)
+
+	if len(result.Errors) != 0 {
+		t.Fatalf("expected valid requires and ensures predicates, got: %+v", result.Errors)
+	}
+}
+
+func TestMarshalAnnotatedJSON(t *testing.T) {
+	expression := &ast.BinaryExpr{
+		Left:  variable("a"),
+		Op:    "+",
+		Right: number("1"),
+	}
+
+	program := &ast.Program{
+		Functions: []ast.Function{{
+			Name:       "f",
+			Parameters: []ast.Variable{intVar("a")},
+			Returns:    []ast.Variable{intVar("result")},
+			Body: &ast.Block{Statements: []ast.Statement{
+				&ast.Assignment{
+					Variables: []ast.Expr{variable("result")},
+					Value:     []ast.Expr{expression},
+				},
+			}},
+		}},
+	}
+
+	result := Analyze(program)
+
+	data, err := MarshalAnnotatedJSON(program, result)
+	if err != nil {
+		t.Fatalf("unexpected JSON serialization error: %v", err)
+	}
+
+	output := string(data)
+
+	if !strings.Contains(output, `"ast"`) {
+		t.Error("expected JSON to contain the ast field")
+	}
+
+	if !strings.Contains(output, `"errors"`) {
+		t.Error("expected JSON to contain the errors field")
+	}
+
+	if !strings.Contains(output, `"inferredType": "int"`) {
+		t.Error("expected JSON to contain an int inferredType annotation")
+	}
+}
+
+func TestMarshalAnnotatedJSONRejectsNilProgram(t *testing.T) {
+	_, err := MarshalAnnotatedJSON(nil, &Result{})
+
+	if err == nil {
+		t.Fatal("expected an error when serializing a nil program")
+	}
+}
+
+func TestMarshalAnnotatedJSONRejectsNilResult(t *testing.T) {
+	_, err := MarshalAnnotatedJSON(&ast.Program{}, nil)
+
+	if err == nil {
+		t.Fatal("expected an error when serializing a nil semantic result")
+	}
+}

@@ -23,17 +23,14 @@ func main() {
 		log.Fatalf("failed to read source file: %v", err)
 	}
 
-	// Построение минимизированного ДКА.
 	funnyNFA := spec.BuildFunnyNFA()
 	alphabet := spec.GetASCIIAlphabet()
 	rawDFA := dfa.Build(funnyNFA, alphabet)
 	minDFA := dfa.Minimize(rawDFA, alphabet)
 
-	// Лексический анализ.
 	lexer := runner.NewLexer(minDFA)
 	tokens := lexer.Tokenize(string(source))
 
-	// Синтаксический анализ.
 	p := parser.New(tokens)
 	program := p.Parse()
 	if len(p.Errors()) > 0 {
@@ -47,10 +44,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Семантический анализ.
 	result := semantic.Analyze(&program)
 
-	// Печатаем единый JSON-документ: AST с типовыми аннотациями + ошибки.
 	output, err := semantic.MarshalAnnotatedJSON(&program, result)
 	if err != nil {
 		log.Fatalf("failed to serialize annotated AST: %v", err)

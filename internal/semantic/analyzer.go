@@ -28,7 +28,7 @@ func (a *Analyzer) Analyze(p *ast.Program) *Result {
 		a.add("nil program")
 		return a.result
 	}
-	// Register signatures before checking bodies so forward calls work.
+
 	for i := range p.Functions {
 		f := &p.Functions[i]
 		ps := make([]Type, len(f.Parameters))
